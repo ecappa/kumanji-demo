@@ -1,0 +1,99 @@
+---
+description: Utilisation obligatoire des MCP servers (shadcn, PocketBase, Trello) avant toute action
+globs:
+alwaysApply: true
+---
+
+# MCP Servers — Réflexes Obligatoires
+
+## MCP Disponibles
+
+Ce projet a trois MCP servers configurés dans `.cursor/mcp.json` :
+
+### 1. shadcn MCP (`shadcn`)
+Accès direct au registre shadcn/ui pour installer, rechercher et inspecter les composants.
+
+### 2. PocketBase MCP (`pocketbase`)
+Accès direct à l'instance PocketBase locale pour gérer les collections, records, et schema.
+
+### 3. Trello MCP (`trello`)
+Accès au board Trello du projet pour lire, créer et déplacer des cartes (tickets).
+
+## Règles d'Utilisation
+
+### shadcn/ui — TOUJOURS consulter le MCP avant d'écrire un composant UI
+
+⚠️ **AVANT** de créer ou modifier un composant shadcn/ui :
+
+1. **Rechercher** dans le registre : `search_items_in_registries` avec registries `["@shadcn"]`
+2. **Voir les exemples** : `get_item_examples_from_registries`
+3. **Inspecter le code source** : `view_items_in_registries`
+
+```
+# Exemples de requêtes MCP shadcn
+- "Recherche le composant Table dans shadcn"
+- "Montre-moi les exemples de Dialog"
+- "Installe le composant AlertDialog depuis shadcn"
+```
+
+**NE JAMAIS** :
+- ❌ Écrire un composant UI de mémoire sans vérifier le registre
+- ❌ Deviner la structure ou les props d'un composant shadcn
+- ❌ Copier du code shadcn d'une ancienne version sans vérifier
+
+**TOUJOURS** :
+- ✅ Vérifier la dernière version via MCP
+- ✅ Utiliser les exemples officiels comme base
+- ✅ Installer via `npx shadcn@latest add <component>` si nécessaire
+
+### PocketBase — TOUJOURS consulter le MCP pour les opérations DB
+
+⚠️ **AVANT** de créer ou modifier des collections :
+
+1. **Lister les collections** existantes
+2. **Vérifier le schema** avant d'écrire des requêtes
+3. **Créer/modifier** via MCP plutôt que manuellement
+
+```
+# Exemples de requêtes MCP PocketBase
+- "Liste les collections PocketBase"
+- "Crée une collection events avec les champs title, date, status"
+- "Ajoute un record de test dans events"
+```
+
+### Trello — AUTOMATIQUEMENT mettre à jour les tickets
+
+⚠️ Ce n'est pas optionnel. La boucle Trello est un **réflexe obligatoire**, comme les tests.
+
+**Cycle automatique à chaque tâche :**
+
+1. **AVANT de coder** → `get_boards` + `get_lists` + `get_cards` pour identifier la carte
+2. **AU DÉMARRAGE** → `update_card` pour déplacer en "In Progress"
+3. **AU COMMIT** → Inclure `(US-XXX)` dans le message de commit
+4. **TESTS VERTS** → `update_card` pour déplacer en "Done"
+5. **BUG TROUVÉ** → `create_card` dans la colonne "To Do"
+
+```
+# Commandes MCP Trello — à exécuter AUTOMATIQUEMENT
+- "Liste les cartes du board Event Manager"
+- "Déplace la carte US-001 dans la colonne In Progress"
+- "Déplace la carte US-001 dans la colonne Done"
+- "Crée une carte 'Bug: validation date timezone' dans To Do"
+```
+
+**NE JAMAIS** :
+- ❌ Commencer à coder sans avoir identifié la carte Trello
+- ❌ Faire un commit sans référence `(US-XXX)` dans le message
+- ❌ Finir une tâche sans déplacer la carte en "Done"
+
+**TOUJOURS** :
+- ✅ Déplacer la carte AVANT de commencer (In Progress)
+- ✅ Déplacer la carte APRÈS les tests (Done)
+- ✅ Créer une carte pour chaque bug découvert
+
+## Pourquoi ?
+
+- L'IA a tendance à générer du code shadcn/ui basé sur sa mémoire, qui peut être **outdated**
+- Le MCP garantit que le code correspond à la **version réelle** installée
+- PocketBase MCP évite les erreurs de schema et permet de valider en temps réel
+- Trello MCP assure la **traçabilité** entre les specs, le code et les tickets — boucle complète

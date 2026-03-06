@@ -1,0 +1,54 @@
+---
+description: Conventions de nommage des fichiers et organisation du projet
+globs:
+alwaysApply: false
+---
+
+# Règles de Nommage et Organisation
+
+## Convention de Nommage des Fichiers
+
+| Type de fichier | Convention | Exemple |
+|-----------------|------------|---------|
+| Composants React | kebab-case | `event-list.tsx`, `event-form.tsx` |
+| Fichiers utilitaires | kebab-case | `format-date.ts` |
+| Types/Interfaces | kebab-case | `events.ts` |
+| Hooks | kebab-case avec préfixe `use-` | `use-events.ts`, `use-debounce.ts` |
+| Pages Next.js | `page.tsx` (convention App Router) | `app/events/page.tsx` |
+| Layouts | `layout.tsx` | `app/layout.tsx` |
+
+## Interdiction des Fichiers en MAJUSCULES
+
+**INTERDIT**: Fichiers avec noms en MAJUSCULES
+
+**Exceptions**: Fichiers standards à la racine uniquement:
+- `README.md`
+- `LICENSE`
+- `.env.example`
+- `CHANGELOG.md`
+
+## Organisation des Répertoires
+
+```
+app/                    # Pages Next.js (App Router)
+components/
+├── events/             # Composants métier par feature
+├── layout/             # Composants de mise en page
+└── ui/                 # Composants shadcn/ui (générés)
+lib/
+├── types/              # Interfaces TypeScript
+├── hooks/              # React hooks custom
+├── pocketbase.ts       # Client PB
+└── utils.ts            # Utilitaires partagés
+specs/                  # Spécifications et documentation
+├── front-reference/    # Patterns de référence UI
+└── generated-docs/     # Documentation générée par AI
+```
+
+## Application
+
+Avant de créer tout fichier:
+
+1. ✅ Nom en kebab-case (sauf conventions Next.js)
+2. ✅ Dans le bon répertoire selon son type
+3. ✅ Extension `.tsx` pour composants, `.ts` pour logique pure

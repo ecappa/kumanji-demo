@@ -1,0 +1,89 @@
+---
+description: Performance React, debounce recherche, memoization, Anti-Flash Pattern
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Performance React
+
+## Debounce sur Recherche
+
+⚠️ **OBLIGATOIRE**: 300ms de debounce sur tous les champs de recherche
+
+```typescript
+// hooks/use-debounce.ts
+import { useState, useEffect } from 'react';
+
+export function useDebounce<T>(value: T, delay: number = 300): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
+// Usage
+const [search, setSearch] = useState('');
+const debouncedSearch = useDebounce(search, 300);
+```
+
+## Memoization
+
+### Lookups avec Map
+
+```typescript
+const statusMap = useMemo(() => {
+  const map = new Map<string, string>();
+  statuses.forEach((s) => map.set(s.id, s.label));
+  return map;
+}, [statuses]);
+```
+
+### useCallback sur Handlers
+
+```typescript
+const handleDelete = useCallback(async (id: string) => {
+  await pb.collection('events').delete(id);
+  queryClient.invalidateQueries({ queryKey: ['events'] });
+}, [queryClient]);
+```
+
+## Anti-Flash Pattern
+
+⚠️ **NE JAMAIS afficher de skeletons lors du changement de filtres**
+
+Les skeletons ne doivent apparaître qu'au **premier chargement**.
+
+```typescript
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+
+const { data, isLoading, isFetching } = useQuery({
+  queryKey: ['events', debouncedSearch, statusFilter],
+  queryFn: fetchEvents,
+  placeholderData: keepPreviousData,
+});
+
+// Premier chargement uniquement
+const isInitialLoading = isLoading && !data;
+
+if (isInitialLoading) return <SkeletonLoader />;
+
+// Changement de filtre : données + spinner + opacité
+return (
+  <div className={`transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+    {isFetching && (
+      <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin" />
+    )}
+    <EventTable events={data?.items ?? []} />
+  </div>
+);
+```
+
+## Résumé des États
+
+| Scénario | Affichage |
+|----------|-----------|
+| Premier chargement | Skeletons ✓ |
+| Changement de filtre | Données + spinner + opacité 60% |
+| Rafraîchissement | Données + spinner discret |

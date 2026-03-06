@@ -1,0 +1,92 @@
+---
+description: Architecture des écrans CRUD, structure de page avec Tabs, édition plein écran
+globs: app/**/*.tsx, components/**/*.tsx
+alwaysApply: false
+---
+
+# Architecture & Structure
+
+## Structure de Page avec Tabs (STRICTE)
+
+```tsx
+<div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+  <div className="shrink-0">{/* Header fixe */}</div>
+
+  <Tabs className="flex flex-col flex-1 min-h-0 overflow-hidden">
+    <TabsList className="shrink-0">...</TabsList>
+
+    <TabsContent className="flex-1 min-h-0 overflow-hidden data-[state=active]:flex">
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="shrink-0">{/* Filtres/recherche fixe */}</div>
+
+        {/* SEUL conteneur scrollable */}
+        <div className="flex-1 min-h-0 overflow-y-auto border rounded-lg">
+          <Table>
+            <TableHead className="sticky top-0 z-10 bg-background">...</TableHead>
+            <TableBody>...</TableBody>
+          </Table>
+        </div>
+      </div>
+    </TabsContent>
+  </Tabs>
+</div>
+```
+
+## Règles Absolues
+
+- ✅ Header table STICKY: `sticky top-0 z-10 bg-background`
+- ✅ Chaîne overflow-hidden complète du parent au conteneur scrollable
+- ✅ UN SEUL `overflow-y-auto` par page
+- ❌ JAMAIS de multiples conteneurs scrollables imbriqués
+
+## Édition: Pages Plein Écran
+
+⚠️ **TOUJOURS** pages plein écran pour création/édition
+❌ **INTERDICTION** totale des dialogs/popups pour formulaires
+
+```tsx
+// ✅ CORRECT
+// app/events/new/page.tsx → Formulaire plein écran
+// app/events/[id]/edit/page.tsx → Formulaire plein écran
+
+// ❌ INTERDIT
+<Dialog><EventForm /></Dialog>
+```
+
+**Exceptions dialogs autorisées:**
+- Confirmation suppression (AlertDialog)
+- Actions rapides (toggle status)
+- Prévisualisation lecture seule
+
+## Footer Sticky Formulaires
+
+```tsx
+<div className="sticky bottom-0 flex justify-end gap-4 py-4 bg-background/95 backdrop-blur border-t">
+  <Button variant="outline">Annuler</Button>
+  <Button type="submit">Sauvegarder</Button>
+</div>
+```
+
+## Structure de Fichiers
+
+```
+app/
+├── layout.tsx              # Layout avec sidebar
+├── page.tsx                # Redirect → /events
+├── globals.css
+├── events/
+│   ├── page.tsx            # Liste
+│   ├── new/page.tsx        # Création
+│   └── [id]/
+│       ├── page.tsx        # Détail
+│       └── edit/page.tsx   # Édition
+components/
+├── events/                 # Composants métier
+├── layout/                 # Sidebar, navigation
+└── ui/                     # shadcn/ui
+lib/
+├── pocketbase.ts           # Client PB
+├── utils.ts                # cn()
+├── types/                  # Interfaces TypeScript
+└── hooks/                  # TanStack Query hooks
+```

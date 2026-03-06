@@ -1,0 +1,112 @@
+---
+description: Charte graphique "Warm Modern Pastel", palette oklch, tokens CSS, typographie
+globs: "**/*.{tsx,css}"
+alwaysApply: true
+---
+
+# Charte Graphique — Warm Modern Pastel
+
+## Philosophie
+
+Palette chaleureuse et moderne, basée sur des tons crème/beige pour les fonds et du teal/vert sage comme couleur primaire. Éviter les couleurs froides ou saturées. Le feeling doit être professionnel mais accueillant.
+
+## Palette Principale (oklch)
+
+### Light Mode
+| Token | Valeur | Description |
+|-------|--------|-------------|
+| background | `oklch(0.995 0.003 80)` | Crème chaud |
+| foreground | `oklch(0.16 0.012 75)` | Brun foncé |
+| primary | `oklch(0.55 0.08 155)` | Teal / vert sage |
+| destructive | `oklch(0.63 0.16 18)` | Corail / rouge chaud |
+| muted | `oklch(0.965 0.007 80)` | Beige subtil |
+| border | `oklch(0.925 0.008 80)` | Bordure chaude |
+
+### Dark Mode
+| Token | Valeur | Description |
+|-------|--------|-------------|
+| background | `oklch(0.15 0.010 75)` | Brun très foncé |
+| foreground | `oklch(0.93 0.005 80)` | Crème clair |
+| primary | `oklch(0.68 0.08 155)` | Teal plus lumineux |
+| destructive | `oklch(0.70 0.15 18)` | Corail lumineux |
+
+## Palette Tailwind Sémantique
+
+⚠️ **NE PAS** utiliser les anciennes couleurs Tailwind (red, blue, green, yellow, gray, purple).
+✅ **UTILISER** la nouvelle palette chaude :
+
+| Ancien | Nouveau | Usage |
+|--------|---------|-------|
+| red | **rose** | Erreurs, destructif |
+| blue | **sky** | Info, processing |
+| green | **emerald** | Succès, validé |
+| yellow | **amber** | Warning, pending |
+| gray | **stone** | Neutre, archived |
+| purple | **violet** | Accent, premium |
+
+### Pattern Status Badges
+
+```tsx
+// ✅ CORRECT — Warm Modern Pastel avec border
+<span className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800">
+  Publié
+</span>
+
+// ❌ INTERDIT — Ancien style saturé
+<span className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+  Publié
+</span>
+```
+
+### Pattern Alertes
+
+```tsx
+// Succès
+<div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
+  <CheckCircle className="h-4 w-4 text-emerald-600" />
+</div>
+
+// Erreur
+<div className="rounded-lg border border-rose-200 bg-rose-50 p-4 dark:border-rose-800 dark:bg-rose-950/30">
+  <XCircle className="h-4 w-4 text-rose-600" />
+</div>
+
+// Warning
+<div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+  <AlertTriangle className="h-4 w-4 text-amber-600" />
+</div>
+
+// Info
+<div className="rounded-lg border border-sky-200 bg-sky-50 p-4 dark:border-sky-800 dark:bg-sky-950/30">
+  <Info className="h-4 w-4 text-sky-600" />
+</div>
+```
+
+## Typographie
+
+- **Font** : System stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`)
+- **Mono** : `ui-monospace, "SFMono-Regular", Menlo, monospace`
+
+| Niveau | Classes | Usage |
+|--------|---------|-------|
+| H1 | `text-3xl font-bold` | Titre principal |
+| H2 | `text-2xl font-semibold` | Sous-titre |
+| H3 | `text-xl font-semibold` | Section |
+| H4 | `text-lg font-medium` | Sous-section |
+| Body | `text-base` | Texte courant |
+| Muted | `text-sm text-muted-foreground` | Info secondaire |
+| Caption | `text-xs text-muted-foreground` | Annotations |
+
+## Bordures et Arrondis
+
+- **Radius** : `0.45rem` (coins subtils, pas trop ronds)
+- **Cards** : `rounded-lg border` (via tokens)
+- **Badges** : `rounded-full` (pilules)
+- **Boutons** : `rounded-md` (via shadcn/ui)
+
+## Règles d'Application
+
+1. Toujours utiliser les CSS variables (--primary, --background, etc.) plutôt que des couleurs Tailwind hardcodées pour les éléments structurels
+2. Utiliser la palette chaude (rose, amber, emerald, sky, violet, stone) pour les badges, statuts et indicateurs
+3. Toujours inclure les variants `dark:` correspondantes
+4. Les badges doivent avoir une `border` subtile en plus du background (pattern pastel chaud)

@@ -1,0 +1,77 @@
+---
+description: États de chargement obligatoires pour boutons et actions async
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# États de Chargement
+
+## Règle Fondamentale
+
+⚠️ **Tout bouton ou élément déclenchant une opération async DOIT avoir un état de chargement**
+
+## Éléments Concernés
+
+- Boutons formulaire (Créer, Modifier, Supprimer, Sauvegarder)
+- Badges cliquables (changement de statut)
+- Toute mutation vers PocketBase
+
+## Comportement Requis
+
+1. **Spinner Visible**: `<Loader2 className="h-4 w-4 animate-spin" />`
+2. **Désactivation**: `disabled={isPending}`
+3. **Feedback Visuel**: `opacity-50 cursor-wait`
+4. **Durée**: Persiste jusqu'à `finally`
+
+## Pattern avec React Query Mutation
+
+```tsx
+const { mutateAsync, isPending } = useMutation({
+  mutationFn: (data: EventFormData) => pb.collection('events').create(data),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['events'] });
+    toast.success('Événement créé');
+    router.push('/events');
+  },
+  onError: () => toast.error('Erreur lors de la création'),
+});
+
+<Button disabled={isPending} type="submit">
+  {isPending ? (
+    <>
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      Création...
+    </>
+  ) : (
+    <>
+      <Plus className="mr-2 h-4 w-4" />
+      Créer l'événement
+    </>
+  )}
+</Button>
+```
+
+## Pattern Manuel (sans React Query)
+
+```tsx
+const [isLoading, setIsLoading] = useState(false);
+
+const handleAction = async () => {
+  setIsLoading(true);
+  try {
+    await performAsyncOperation();
+    toast.success('Opération réussie');
+  } catch (error) {
+    toast.error('Erreur lors de l\'opération');
+  } finally {
+    setIsLoading(false); // ← TOUJOURS dans finally
+  }
+};
+```
+
+## Exceptions
+
+Ne s'applique **PAS** à:
+- Navigation entre pages
+- Ouverture de modales
+- Changement d'état local (filtres, recherche)
