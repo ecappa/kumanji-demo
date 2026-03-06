@@ -26,3 +26,13 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# PocketBase (local DB + generated)
+pb_data/
+
+# BMAD workflow (output / cache)
+_bmad/
+_bmad-output/
+
+# OpenCode / tooling (lockfiles, local config)
+.opencode/
