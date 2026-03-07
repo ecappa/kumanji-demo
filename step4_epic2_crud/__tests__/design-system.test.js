@@ -89,20 +89,15 @@ describe('Design System Tests', () => {
     expect(packageJson.dependencies['lucide-react']).toBeDefined();
   });
 
-  test('tailwind config should be updated for shadcn/ui', () => {
-    const tailwindConfigPath = path.join(process.cwd(), 'tailwind.config.ts');
-    expect(fs.existsSync(tailwindConfigPath)).toBe(true);
+  test('Tailwind v4: globals.css should use @theme inline for token mapping (no tailwind.config.ts)', () => {
+    const globalsPath = path.join(process.cwd(), 'app', 'globals.css');
+    const globalsContent = fs.readFileSync(globalsPath, 'utf8');
     
-    const tailwindContent = fs.readFileSync(tailwindConfigPath, 'utf8');
-    
-    // Vérifier content paths pour shadcn
-    expect(tailwindContent).toContain('components/**/*.{js,ts,jsx,tsx,mdx}');
-    
-    // Vérifier variables CSS custom
-    expect(tailwindContent).toContain('hsl(var(--background))');
-    expect(tailwindContent).toContain('hsl(var(--foreground))');
-    expect(tailwindContent).toContain('hsl(var(--primary))');
-    expect(tailwindContent).toContain('hsl(var(--destructive))');
+    // Tailwind v4 uses @theme inline in CSS, not tailwind.config.ts
+    expect(globalsContent).toContain('@theme inline');
+    expect(globalsContent).toContain('--color-primary');
+    expect(globalsContent).toContain('--color-destructive');
+    expect(globalsContent).toContain('--color-background');
   });
 
   test('design system should support both light and dark modes', () => {

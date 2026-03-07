@@ -8,7 +8,12 @@
     "pocketbase": {
       "type": "stdio",
       "command": "npx",
-      "args": ["pocketbase-cursor-mcp", "--url=http://127.0.0.1:8090"]
+      "args": [
+        "pocketbase-cursor-mcp",
+        "--url=http://127.0.0.1:8090",
+        "--admin-email=admin@demo.local",
+        "--admin-password=Demo1234!"
+      ]
     },
     "trello": {
       "type": "stdio",

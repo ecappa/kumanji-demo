@@ -65,21 +65,169 @@ Toujours Zod pour la validation, jamais de validation manuelle.
 - **Status Badge** : config objet mapping status → label + variant. Utiliser tokens sémantiques (`bg-success/10 text-success border-success/20`)
 - **Icons Lucide** : h-4 w-4 (small), h-5 w-5 (medium), h-6 w-6 (large)
 
-## PocketBase — Collection `events`
+## PocketBase — Backend
 
-| Champ | Type | Options |
-|-------|------|---------|
-| title | text | required |
-| description | text | — |
-| date | date | required |
-| youtube_url | url | — |
-| status | select | draft, published, completed, cancelled · required |
-| image_url | url | — |
-
-- URL locale : `http://127.0.0.1:8090` · Admin : `http://127.0.0.1:8090/_/`
+- URL locale : `http://127.0.0.1:8090` · Admin UI : `http://127.0.0.1:8090/_/`
+- **Admin login** : `admin@demo.local` / `Demo1234!`
 - Client singleton : `pb.autoCancellation(false)` pour TanStack Query
 - CRUD via TanStack Query hooks (`useQuery`, `useMutation` avec invalidation)
 - Erreurs : `ClientResponseError` avec gestion par status code (400, 404, etc.)
+- **Version** : PocketBase v0.23+ (API `fields`, PAS `schema`)
+
+### 1. Démarrage PocketBase
+
+```bash
+# Démarrer le container (docker-compose.yml déjà configuré)
+docker compose up -d
+
+# Si conflit de container existant :
+docker rm -f event-manager-pb && docker compose up -d
+
+# Vérifier que PocketBase répond :
+curl -f http://127.0.0.1:8090/api/health
+# → {"message":"API is healthy.","code":200,"data":{}}
+```
+
+**Première fois uniquement** — créer le superuser :
+```bash
+docker exec event-manager-pb /usr/local/bin/pocketbase superuser upsert admin@demo.local 'Demo1234!'
+```
+
+### 2. Authentification API (pour toutes les opérations admin)
+
+PocketBase v0.23+ utilise `_superusers` (PAS `/api/admins/`) :
+
+```bash
+# Obtenir un token admin
+TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/collections/_superusers/auth-with-password \
+  -H "Content-Type: application/json" \
+  -d '{"identity":"admin@demo.local","password":"Demo1234!"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+# Utiliser le token dans chaque requête admin :
+curl -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8090/api/collections
+```
+
+### 3. Créer une collection (API v0.23+ — format `fields`, PAS `schema`)
+
+⚠️ **ATTENTION** : PocketBase v0.23+ utilise `fields` au top-level. L'ancien format `schema` avec `options` imbriquées ne fonctionne PAS et crée des collections vides sans erreur.
+
+```bash
+curl -s -X POST http://127.0.0.1:8090/api/collections \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "ma_collection",
+    "type": "base",
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "fields": [
+      {
+        "name": "mon_text",
+        "type": "text",
+        "required": true,
+        "min": 1,
+        "max": 255
+      },
+      {
+        "name": "ma_date",
+        "type": "date",
+        "required": true
+      },
+      {
+        "name": "mon_url",
+        "type": "url",
+        "required": false
+      },
+      {
+        "name": "mon_select",
+        "type": "select",
+        "required": true,
+        "maxSelect": 1,
+        "values": ["option1", "option2", "option3"]
+      }
+    ]
+  }'
+```
+
+**Format des fields par type** (propriétés au top-level, PAS dans `options`) :
+
+| Type | Propriétés spécifiques |
+|------|----------------------|
+| `text` | `min`, `max`, `pattern` |
+| `date` | `min`, `max` |
+| `url` | `exceptDomains`, `onlyDomains` |
+| `select` | `maxSelect`, `values` (array de strings) |
+| `number` | `min`, `max`, `noDecimal` |
+| `bool` | — |
+| `email` | `exceptDomains`, `onlyDomains` |
+| `file` | `maxSelect`, `maxSize`, `mimeTypes`, `thumbs` |
+
+**API Rules** : chaîne vide `""` = accès public (dev). `null` = admin seulement.
+
+### 4. Opérations CRUD sur les records
+
+```bash
+# Lister les records (remplacer COLLECTION par le nom réel)
+curl -s "http://127.0.0.1:8090/api/collections/COLLECTION/records?sort=-created" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Créer un record
+curl -s -X POST http://127.0.0.1:8090/api/collections/COLLECTION/records \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"champ1": "valeur1", "champ2": "valeur2"}'
+
+# Modifier un record
+curl -s -X PATCH "http://127.0.0.1:8090/api/collections/COLLECTION/records/RECORD_ID" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"champ1": "nouvelle_valeur"}'
+
+# Supprimer un record
+curl -s -X DELETE "http://127.0.0.1:8090/api/collections/COLLECTION/records/RECORD_ID" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Supprimer une collection (supprimer tous les records d'abord)
+curl -s -X DELETE "http://127.0.0.1:8090/api/collections/COLLECTION_ID" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### 5. Données de test (seed)
+
+Quand on demande de créer des données de test, utiliser `curl` directement (PAS de script JS intermédiaire). Toujours s'authentifier d'abord :
+
+```bash
+TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/collections/_superusers/auth-with-password \
+  -H "Content-Type: application/json" \
+  -d '{"identity":"admin@demo.local","password":"Demo1234!"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+curl -s -X POST http://127.0.0.1:8090/api/collections/COLLECTION/records \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"champ1": "valeur1", "champ2": "valeur2"}'
+```
+
+**Règles pour les données de test** :
+- Toujours couvrir TOUS les statuts/variantes (au moins 1 record par valeur de select)
+- Varier les champs optionnels (certains remplis, d'autres vides)
+- Utiliser des dates réalistes (passées pour terminés, futures pour brouillons)
+- Les single quotes dans les valeurs JSON bash : échapper avec `'\''`
+
+### 6. Collection `events` — Schéma de référence
+
+| Champ | Type | Options |
+|-------|------|---------|
+| title | text | required, min: 1, max: 255 |
+| description | text | — |
+| date | date | required |
+| youtube_url | url | — |
+| status | select | required, maxSelect: 1, values: draft/published/completed/cancelled |
+| image_url | url | — |
 
 ## Performance
 

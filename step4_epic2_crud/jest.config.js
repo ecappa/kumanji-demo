@@ -10,17 +10,13 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    // PocketBase est un module ESM — mock global pour éviter les imports ESM dans Jest
+    '^pocketbase$': '<rootDir>/__mocks__/pocketbase.ts',
   },
   testEnvironment: 'jest-environment-jsdom',
-  extensionsToTreatAsEsm: ['.ts'],
-  transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      useESM: true,
-    }],
-  },
   testMatch: [
-    '**/__tests__/**/*.(test|spec).(js|ts)',
-    '**/*.(test|spec).(js|ts)'
+    '**/__tests__/**/*.(test|spec).(js|ts|tsx)',
+    '**/*.(test|spec).(js|ts|tsx)'
   ],
 }
 

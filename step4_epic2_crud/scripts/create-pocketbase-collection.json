@@ -1,0 +1,46 @@
+{
+  "name": "events",
+  "type": "base",
+  "schema": [
+    {
+      "name": "title",
+      "type": "text",
+      "required": true,
+      "options": {
+        "min": 1,
+        "max": 200
+      }
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 2000
+      }
+    },
+    {
+      "name": "date",
+      "type": "date",
+      "required": true
+    },
+    {
+      "name": "status",
+      "type": "select",
+      "required": true,
+      "options": {
+        "values": ["draft", "published", "completed", "cancelled"]
+      }
+    },
+    {
+      "name": "youtube_url",
+      "type": "url",
+      "required": false
+    },
+    {
+      "name": "image_url",
+      "type": "url",
+      "required": false
+    }
+  ]
+}

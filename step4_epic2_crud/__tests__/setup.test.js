@@ -24,10 +24,10 @@ describe('Next.js Initialization Tests', () => {
     expect(packageJson.devDependencies['@types/react']).toBeDefined();
     expect(packageJson.devDependencies['@types/react-dom']).toBeDefined();
     
-    // Vérifier Tailwind CSS
+    // Vérifier Tailwind CSS v4 (pas d'autoprefixer, intégré)
     expect(packageJson.devDependencies.tailwindcss).toBeDefined();
     expect(packageJson.devDependencies.postcss).toBeDefined();
-    expect(packageJson.devDependencies.autoprefixer).toBeDefined();
+    expect(packageJson.devDependencies['@tailwindcss/postcss']).toBeDefined();
     
     // Vérifier ESLint
     expect(packageJson.devDependencies.eslint).toBeDefined();
@@ -53,9 +53,12 @@ describe('Next.js Initialization Tests', () => {
     expect(fs.existsSync(nextConfigPath)).toBe(true);
   });
 
-  test('tailwind.config.ts should exist', () => {
-    const tailwindConfigPath = path.join(process.cwd(), 'tailwind.config.ts');
-    expect(fs.existsSync(tailwindConfigPath)).toBe(true);
+  test('Tailwind v4: globals.css should contain @import "tailwindcss" (no tailwind.config.ts needed)', () => {
+    const globalsPath = path.join(process.cwd(), 'app', 'globals.css');
+    expect(fs.existsSync(globalsPath)).toBe(true);
+    
+    const globalsContent = fs.readFileSync(globalsPath, 'utf8');
+    expect(globalsContent).toContain('@import "tailwindcss"');
   });
 
   test('app directory structure should exist', () => {
