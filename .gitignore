@@ -1,0 +1,56 @@
+# -----------------------------------------------------------------------------
+# Racine — s’applique à tout le repo (step1, step2, step3, step4, base_*)
+# -----------------------------------------------------------------------------
+
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Build / cache
+dist/
+*.tsbuildinfo
+
+# Env (secrets)
+.env
+.env.local
+.env.*.local
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / éditeurs
+.idea/
+*.swp
+*.swo
+
+# -----------------------------------------------------------------------------
+# Par step : PocketBase, BMAD, OpenCode, configs agents (dupliqués dans chaque step)
+# -----------------------------------------------------------------------------
+
+# PocketBase (bases locales + types générés)
+pb_data/
+
+# BMAD (workflow output / cache)
+_bmad/
+_bmad-output/
+
+# OpenCode (tooling, lockfiles, agents)
+.opencode/
+
+# Configs agents / IDE — dupliqués dans step1, step2, step3, step4
+.cursor/
+.gemini/
+.agents/
+.claude/
+
+# Docs générés (optionnel)
+docs/
